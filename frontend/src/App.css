@@ -191,6 +191,64 @@ body {
   border-left: 4px solid #ff6b6b;
 }
 
+.scores-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.score-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease;
+}
+
+.score-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.score-item.rank-1 {
+  background: linear-gradient(45deg, #ffd700, #ffed4e);
+  color: #000;
+  font-weight: bold;
+}
+
+.score-item.rank-2 {
+  background: linear-gradient(45deg, #c0c0c0, #e8e8e8);
+  color: #000;
+  font-weight: bold;
+}
+
+.score-item.rank-3 {
+  background: linear-gradient(45deg, #cd7f32, #daa520);
+  color: #000;
+  font-weight: bold;
+}
+
+.rank {
+  font-weight: bold;
+  font-size: 1.1rem;
+  min-width: 40px;
+}
+
+.player-name {
+  flex: 1;
+  margin: 0 1rem;
+  font-weight: 500;
+}
+
+.score {
+  color: #4ecdc4;
+  font-weight: bold;
+  font-size: 1.1rem;
+}
+
 /* About section */
 .about-section {
   background: rgba(255, 255, 255, 0.95);

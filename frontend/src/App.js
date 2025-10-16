@@ -1,7 +1,45 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import './App.css';
 
 const App = () => {
+  const [scores, setScores] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  // URL del backend desplegado en Render
+  const API_URL = 'https://juego-retro-software2.onrender.com/api';
+
+  // Función para cargar el leaderboard
+  const loadLeaderboard = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch(`${API_URL}/leaderboard`);
+      if (response.ok) {
+        const data = await response.json();
+        setScores(data.scores || []);
+      } else {
+        console.error('Error cargando puntuaciones:', response.statusText);
+      }
+    } catch (error) {
+      console.error('Error de conexión:', error);
+    }
+    setLoading(false);
+  };
+
+  // Cargar puntuaciones al montar el componente
+  useEffect(() => {
+    loadLeaderboard();
+  }, []);
+
+  // Función para iniciar el juego
+  const startGame = () => {
+    const gameSection = document.getElementById('game');
+    if (gameSection) {
+      gameSection.scrollIntoView({ behavior: 'smooth' });
+    }
+    
+    // Aquí podrías inicializar Phaser.js si lo deseas
+    console.log('Iniciando juego...');
+  };
   return (
     <div className="App">
       <header className="header">
@@ -20,12 +58,7 @@ const App = () => {
           <p>Un juego educativo desarrollado con React y Phaser.js</p>
           <button 
             className="play-button"
-            onClick={() => {
-              const gameSection = document.getElementById('game');
-              if (gameSection) {
-                gameSection.scrollIntoView({ behavior: 'smooth' });
-              }
-            }}
+            onClick={startGame}
           >
             🎮 Jugar Ahora
           </button>
@@ -51,8 +84,29 @@ const App = () => {
           <div className="leaderboard">
             <p>Las puntuaciones se guardan automáticamente en la base de datos.</p>
             <div id="scores-list">
-              <p>Cargando puntuaciones...</p>
+              {loading ? (
+                <p>🔄 Cargando puntuaciones...</p>
+              ) : scores.length > 0 ? (
+                <div className="scores-grid">
+                  {scores.slice(0, 10).map((score, index) => (
+                    <div key={index} className={`score-item rank-${index + 1}`}>
+                      <span className="rank">#{index + 1}</span>
+                      <span className="player-name">{score.username || 'Anónimo'}</span>
+                      <span className="score">{score.score || 0} pts</span>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p>📊 No hay puntuaciones aún. ¡Sé el primero en jugar!</p>
+              )}
             </div>
+            <button 
+              className="play-button"
+              onClick={() => loadLeaderboard()}
+              style={{marginTop: '1rem'}}
+            >
+              🔄 Actualizar Puntuaciones
+            </button>
           </div>
         </section>
 
