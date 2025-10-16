@@ -24,12 +24,12 @@ const app = express();
 const server = createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: process.env.CORS_ORIGIN || "http://localhost:3000",
+    origin: process.env['CORS_ORIGIN'] || "http://localhost:3000",
     methods: ["GET", "POST"]
   }
 });
 
-const PORT = process.env.PORT || 4000;
+const PORT = process.env['PORT'] || 4000;
 
 // Rate limiting
 const limiter = rateLimit({
@@ -44,19 +44,19 @@ app.use(compression());
 app.use(morgan('combined'));
 app.use(limiter);
 app.use(cors({
-  origin: process.env.CORS_ORIGIN || "http://localhost:3000",
+  origin: process.env['CORS_ORIGIN'] || "http://localhost:3000",
   credentials: true
 }));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 
 // Health check endpoint
-app.get('/health', (req, res) => {
+app.get('/health', (_req, res) => {
   res.status(200).json({
     status: 'OK',
     timestamp: new Date().toISOString(),
     uptime: process.uptime(),
-    environment: process.env.NODE_ENV || 'development'
+    environment: process.env['NODE_ENV'] || 'development'
   });
 });
 
@@ -69,12 +69,12 @@ app.use('/api/leaderboard', leaderboardRoutes);
 io.on('connection', (socket) => {
   console.log(`User connected: ${socket.id}`);
 
-  socket.on('join-game', (data) => {
+  socket.on('join-game', (data: any) => {
     console.log(`User ${socket.id} joined game:`, data);
     socket.join('game-room');
   });
 
-  socket.on('game-score', (data) => {
+  socket.on('game-score', (data: any) => {
     console.log(`Score update from ${socket.id}:`, data);
     socket.to('game-room').emit('score-update', data);
   });
