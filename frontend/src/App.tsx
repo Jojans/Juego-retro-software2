@@ -1,38 +1,28 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { GameProvider } from './contexts/GameContext';
-import { AnalyticsProvider } from './contexts/AnalyticsContext';
-
-// Components
-import Navbar from './components/Navbar';
-import HomePage from './pages/HomePage';
-import GamePage from './pages/GamePage';
-import LeaderboardPage from './pages/LeaderboardPage';
-import AboutPage from './pages/AboutPage';
-
-// Styles
+import Header from './components/Header';
+import Home from './pages/Home';
+import Game from './pages/Game';
+import Leaderboard from './pages/Leaderboard';
+import About from './pages/About';
 import './App.css';
 
-const App: React.FC = () => {
+function App() {
   return (
-    <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-      <GameProvider>
-        <AnalyticsProvider>
-          <div className="space-container">
-            <Navbar />
-            <main className="min-h-screen">
-              <Routes>
-                <Route path="/" element={<HomePage />} />
-                <Route path="/game" element={<GamePage />} />
-                <Route path="/leaderboard" element={<LeaderboardPage />} />
-                <Route path="/about" element={<AboutPage />} />
-              </Routes>
-            </main>
-          </div>
-        </AnalyticsProvider>
-      </GameProvider>
+    <Router>
+      <div className="App">
+        <Header />
+        <main className="main-content">
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/game" element={<Game />} />
+            <Route path="/leaderboard" element={<Leaderboard />} />
+            <Route path="/about" element={<About />} />
+          </Routes>
+        </main>
+      </div>
     </Router>
   );
-};
+}
 
 export default App;

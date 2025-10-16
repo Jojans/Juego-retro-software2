@@ -1,271 +1,236 @@
 import express from 'express';
-import GameSession from '../models/GameSession';
-import User from '../models/User';
-import { optionalAuth } from '../middleware/auth';
-import { logger } from '../utils/logger';
+import { getClient } from '../config/database';
 
 const router = express.Router();
 
-// @route   GET /api/leaderboard/global
-// @desc    Get global leaderboard
-// @access  Public
-router.get('/global', optionalAuth, async (req, res) => {
+// Get leaderboard
+router.get('/', async (req, res) => {
   try {
     const limit = parseInt(req.query.limit as string) || 10;
-    const difficulty = req.query.difficulty as string;
+    const offset = parseInt(req.query.offset as string) || 0;
+    const timeRange = req.query.timeRange as string || 'all'; // all, day, week, month
 
-    let leaderboard;
+    const client = await getClient();
     
-    if (difficulty) {
-      leaderboard = await GameSession.getLeaderboard(difficulty, limit);
-    } else {
-      leaderboard = await GameSession.getLeaderboard(undefined, limit);
-    }
+    try {
+      let timeFilter = '';
+      let queryParams: any[] = [limit, offset];
 
-    res.json({
-      success: true,
-      leaderboard,
-      difficulty: difficulty || 'all'
-    });
-  } catch (error) {
-    logger.error('Get global leaderboard error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Server error getting leaderboard'
-    });
-  }
-});
-
-// @route   GET /api/leaderboard/user
-// @desc    Get user's position in leaderboard
-// @access  Private
-router.get('/user', optionalAuth, async (req, res) => {
-  try {
-    if (!req.userId) {
-      return res.status(401).json({
-        success: false,
-        message: 'Authentication required'
-      });
-    }
-
-    const user = await User.findById(req.userId);
-    if (!user) {
-      return res.status(404).json({
-        success: false,
-        message: 'User not found'
-      });
-    }
-
-    // Get user's rank based on best score
-    const userRank = await GameSession.countDocuments({
-      score: { $gt: user.bestScore }
-    }) + 1;
-
-    // Get users around this user's rank
-    const nearbyUsers = await GameSession.aggregate([
-      {
-        $lookup: {
-          from: 'users',
-          localField: 'userId',
-          foreignField: '_id',
-          as: 'user'
-        }
-      },
-      {
-        $unwind: '$user'
-      },
-      {
-        $sort: { score: -1 }
-      },
-      {
-        $skip: Math.max(0, userRank - 3)
-      },
-      {
-        $limit: 7
-      },
-      {
-        $project: {
-          score: 1,
-          level: 1,
-          wave: 1,
-          completed: 1,
-          'user.username': 1,
-          'user.avatar': 1,
-          'user.level': 1
-        }
+      // Add time filter based on timeRange
+      switch (timeRange) {
+        case 'day':
+          timeFilter = 'AND s.created_at >= CURRENT_DATE';
+          break;
+        case 'week':
+          timeFilter = 'AND s.created_at >= CURRENT_DATE - INTERVAL \'7 days\'';
+          break;
+        case 'month':
+          timeFilter = 'AND s.created_at >= CURRENT_DATE - INTERVAL \'30 days\'';
+          break;
+        default:
+          timeFilter = '';
       }
-    ]);
 
-    res.json({
-      success: true,
-      userRank,
-      userScore: user.bestScore,
-      nearbyUsers
-    });
-  } catch (error) {
-    logger.error('Get user leaderboard position error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Server error getting user position'
-    });
-  }
-});
+      const query = `
+        SELECT 
+          s.player_name,
+          s.score,
+          s.wave,
+          s.game_duration,
+          s.created_at,
+          ROW_NUMBER() OVER (ORDER BY s.score DESC) as rank
+        FROM scores s
+        WHERE 1=1 ${timeFilter}
+        ORDER BY s.score DESC
+        LIMIT $1 OFFSET $2
+      `;
 
-// @route   GET /api/leaderboard/daily
-// @desc    Get daily leaderboard
-// @access  Public
-router.get('/daily', async (req, res) => {
-  try {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    
-    const tomorrow = new Date(today);
-    tomorrow.setDate(tomorrow.getDate() + 1);
+      const result = await client.query(query, queryParams);
 
-    const leaderboard = await GameSession.aggregate([
-      {
-        $match: {
-          startTime: {
-            $gte: today,
-            $lt: tomorrow
+      // Get total count for pagination
+      const countQuery = `
+        SELECT COUNT(*) as total
+        FROM scores s
+        WHERE 1=1 ${timeFilter}
+      `;
+      
+      const countResult = await client.query(countQuery, timeRange !== 'all' ? [timeFilter] : []);
+      const total = parseInt(countResult.rows[0].total);
+
+      res.json({
+        success: true,
+        data: {
+          leaderboard: result.rows,
+          pagination: {
+            limit,
+            offset,
+            total,
+            hasMore: offset + limit < total
           },
-          completed: true
+          timeRange
         }
-      },
-      {
-        $lookup: {
-          from: 'users',
-          localField: 'userId',
-          foreignField: '_id',
-          as: 'user'
-        }
-      },
-      {
-        $unwind: '$user'
-      },
-      {
-        $sort: { score: -1 }
-      },
-      {
-        $limit: 10
-      },
-      {
-        $project: {
-          score: 1,
-          level: 1,
-          wave: 1,
-          difficulty: 1,
-          'user.username': 1,
-          'user.avatar': 1,
-          'user.level': 1,
-          startTime: 1
-        }
-      }
-    ]);
-
-    res.json({
-      success: true,
-      leaderboard,
-      date: today.toISOString().split('T')[0]
-    });
+      });
+    } finally {
+      client.release();
+    }
   } catch (error) {
-    logger.error('Get daily leaderboard error:', error);
+    console.error('Get leaderboard error:', error);
     res.status(500).json({
       success: false,
-      message: 'Server error getting daily leaderboard'
+      message: 'Internal server error'
     });
   }
 });
 
-// @route   GET /api/leaderboard/weekly
-// @desc    Get weekly leaderboard
-// @access  Public
-router.get('/weekly', async (req, res) => {
+// Submit score
+router.post('/submit', async (req, res) => {
   try {
-    const now = new Date();
-    const weekStart = new Date(now);
-    weekStart.setDate(now.getDate() - now.getDay());
-    weekStart.setHours(0, 0, 0, 0);
+    const { playerName, score, wave, gameDuration, userId } = req.body;
 
-    const leaderboard = await GameSession.aggregate([
-      {
-        $match: {
-          startTime: { $gte: weekStart },
-          completed: true
-        }
-      },
-      {
-        $lookup: {
-          from: 'users',
-          localField: 'userId',
-          foreignField: '_id',
-          as: 'user'
-        }
-      },
-      {
-        $unwind: '$user'
-      },
-      {
-        $sort: { score: -1 }
-      },
-      {
-        $limit: 10
-      },
-      {
-        $project: {
-          score: 1,
-          level: 1,
-          wave: 1,
-          difficulty: 1,
-          'user.username': 1,
-          'user.avatar': 1,
-          'user.level': 1,
-          startTime: 1
-        }
-      }
-    ]);
-
-    res.json({
-      success: true,
-      leaderboard,
-      weekStart: weekStart.toISOString().split('T')[0]
-    });
-  } catch (error) {
-    logger.error('Get weekly leaderboard error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Server error getting weekly leaderboard'
-    });
-  }
-});
-
-// @route   GET /api/leaderboard/difficulty/:difficulty
-// @desc    Get leaderboard for specific difficulty
-// @access  Public
-router.get('/difficulty/:difficulty', async (req, res) => {
-  try {
-    const { difficulty } = req.params;
-    const limit = parseInt(req.query.limit as string) || 10;
-
-    if (!['easy', 'normal', 'hard', 'nightmare'].includes(difficulty)) {
+    // Validation
+    if (!playerName || score === undefined || wave === undefined) {
       return res.status(400).json({
         success: false,
-        message: 'Invalid difficulty level'
+        message: 'Player name, score, and wave are required'
       });
     }
 
-    const leaderboard = await GameSession.getLeaderboard(difficulty, limit);
+    if (typeof score !== 'number' || score < 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Score must be a positive number'
+      });
+    }
 
-    res.json({
-      success: true,
-      leaderboard,
-      difficulty
-    });
+    if (typeof wave !== 'number' || wave < 1) {
+      return res.status(400).json({
+        success: false,
+        message: 'Wave must be a positive number'
+      });
+    }
+
+    const client = await getClient();
+    
+    try {
+      // Insert score
+      const result = await client.query(
+        `INSERT INTO scores (player_name, score, wave, game_duration, user_id)
+         VALUES ($1, $2, $3, $4, $5)
+         RETURNING id, player_name, score, wave, game_duration, created_at`,
+        [playerName, score, wave, gameDuration || 0, userId || null]
+      );
+
+      const newScore = result.rows[0];
+
+      // Get player's rank
+      const rankResult = await client.query(
+        `SELECT COUNT(*) + 1 as rank
+         FROM scores
+         WHERE score > $1`,
+        [score]
+      );
+
+      const rank = parseInt(rankResult.rows[0].rank);
+
+      res.status(201).json({
+        success: true,
+        message: 'Score submitted successfully',
+        data: {
+          score: newScore,
+          rank
+        }
+      });
+    } finally {
+      client.release();
+    }
   } catch (error) {
-    logger.error('Get difficulty leaderboard error:', error);
+    console.error('Submit score error:', error);
     res.status(500).json({
       success: false,
-      message: 'Server error getting difficulty leaderboard'
+      message: 'Internal server error'
+    });
+  }
+});
+
+// Get player's best scores
+router.get('/player/:playerName', async (req, res) => {
+  try {
+    const { playerName } = req.params;
+    const limit = parseInt(req.query.limit as string) || 5;
+
+    const client = await getClient();
+    
+    try {
+      const result = await client.query(
+        `SELECT 
+           player_name,
+           score,
+           wave,
+           game_duration,
+           created_at,
+           ROW_NUMBER() OVER (ORDER BY score DESC) as rank
+         FROM scores
+         WHERE player_name = $1
+         ORDER BY score DESC
+         LIMIT $2`,
+        [playerName, limit]
+      );
+
+      res.json({
+        success: true,
+        data: {
+          player: playerName,
+          scores: result.rows
+        }
+      });
+    } finally {
+      client.release();
+    }
+  } catch (error) {
+    console.error('Get player scores error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Internal server error'
+    });
+  }
+});
+
+// Get top players by wave
+router.get('/waves', async (req, res) => {
+  try {
+    const limit = parseInt(req.query.limit as string) || 10;
+
+    const client = await getClient();
+    
+    try {
+      const result = await client.query(
+        `SELECT 
+           player_name,
+           MAX(wave) as highest_wave,
+           MAX(score) as best_score,
+           COUNT(*) as games_played,
+           MAX(created_at) as last_played
+         FROM scores
+         GROUP BY player_name
+         ORDER BY highest_wave DESC, best_score DESC
+         LIMIT $1`,
+        [limit]
+      );
+
+      res.json({
+        success: true,
+        data: {
+          topWaves: result.rows
+        }
+      });
+    } finally {
+      client.release();
+    }
+  } catch (error) {
+    console.error('Get top waves error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Internal server error'
     });
   }
 });

@@ -1,219 +1,26 @@
-@import 'tailwindcss/base';
-@import 'tailwindcss/components';
-@import 'tailwindcss/utilities';
-
-/* Import Google Fonts */
-@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Press+Start+2P&display=swap');
-
-/* Custom CSS Variables */
-:root {
-  --space-blue: #0a0e27;
-  --neon-cyan: #00ffff;
-  --neon-pink: #ff00ff;
-  --neon-green: #00ff00;
-  --neon-yellow: #ffff00;
-  --space-purple: #1a0b2e;
-  --space-dark: #16213e;
-}
-
-/* Global Styles */
-* {
-  box-sizing: border-box;
-}
-
 body {
   margin: 0;
-  font-family: 'Orbitron', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background: var(--space-blue);
-  color: var(--neon-cyan);
-  overflow-x: hidden;
+  background: linear-gradient(135deg, #0c0c0c 0%, #1a1a2e 50%, #16213e 100%);
+  min-height: 100vh;
+  color: white;
 }
 
 code {
-  font-family: 'Press Start 2P', source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
 
-/* Custom Components */
-.space-container {
-  background: linear-gradient(135deg, #0a0e27 0%, #1a0b2e 50%, #16213e 100%);
+* {
+  box-sizing: border-box;
+}
+
+#root {
   min-height: 100vh;
-  position: relative;
-  overflow: hidden;
-}
-
-.space-container::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-image: 
-    radial-gradient(2px 2px at 20px 30px, #eee, transparent),
-    radial-gradient(2px 2px at 40px 70px, rgba(255,255,255,0.8), transparent),
-    radial-gradient(1px 1px at 90px 40px, #fff, transparent),
-    radial-gradient(1px 1px at 130px 80px, rgba(255,255,255,0.6), transparent),
-    radial-gradient(2px 2px at 160px 30px, #fff, transparent);
-  background-repeat: repeat;
-  background-size: 200px 100px;
-  animation: twinkle 20s linear infinite;
-  pointer-events: none;
-}
-
-@keyframes twinkle {
-  0% { transform: translateY(0px); }
-  100% { transform: translateY(-100px); }
-}
-
-.neon-text {
-  color: var(--neon-cyan);
-  text-shadow: 
-    0 0 5px var(--neon-cyan),
-    0 0 10px var(--neon-cyan),
-    0 0 15px var(--neon-cyan),
-    0 0 20px var(--neon-cyan);
-}
-
-.neon-button {
-  background: transparent;
-  border: 2px solid var(--neon-cyan);
-  color: var(--neon-cyan);
-  padding: 12px 24px;
-  font-family: 'Orbitron', monospace;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 2px;
-  transition: all 0.3s ease;
-  position: relative;
-  overflow: hidden;
-}
-
-.neon-button::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(0, 255, 255, 0.2), transparent);
-  transition: left 0.5s;
-}
-
-.neon-button:hover::before {
-  left: 100%;
-}
-
-.neon-button:hover {
-  background: var(--neon-cyan);
-  color: var(--space-blue);
-  box-shadow: 
-    0 0 10px var(--neon-cyan),
-    0 0 20px var(--neon-cyan),
-    0 0 30px var(--neon-cyan);
-  transform: translateY(-2px);
-}
-
-.neon-button:active {
-  transform: translateY(0);
-}
-
-.retro-text {
-  font-family: 'Press Start 2P', monospace;
-  color: var(--neon-yellow);
-  text-shadow: 2px 2px 0px var(--space-purple);
-}
-
-.glow-effect {
-  animation: glow 2s ease-in-out infinite alternate;
-}
-
-@keyframes glow {
-  from {
-    box-shadow: 0 0 5px var(--neon-cyan), 0 0 10px var(--neon-cyan), 0 0 15px var(--neon-cyan);
-  }
-  to {
-    box-shadow: 0 0 10px var(--neon-cyan), 0 0 20px var(--neon-cyan), 0 0 30px var(--neon-cyan);
-  }
-}
-
-/* Game Canvas Styles */
-.game-canvas {
-  border: 2px solid var(--neon-cyan);
-  border-radius: 8px;
-  box-shadow: 
-    0 0 20px var(--neon-cyan),
-    inset 0 0 20px rgba(0, 255, 255, 0.1);
-  background: var(--space-dark);
-}
-
-/* HUD Styles */
-.hud-container {
-  background: rgba(10, 14, 39, 0.9);
-  border: 1px solid var(--neon-cyan);
-  border-radius: 8px;
-  padding: 16px;
-  backdrop-filter: blur(10px);
-}
-
-.hud-stat {
   display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 8px;
-}
-
-.hud-icon {
-  width: 24px;
-  height: 24px;
-  filter: drop-shadow(0 0 5px var(--neon-cyan));
-}
-
-/* Loading Animation */
-.loading-spinner {
-  width: 40px;
-  height: 40px;
-  border: 3px solid rgba(0, 255, 255, 0.3);
-  border-top: 3px solid var(--neon-cyan);
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
-/* Responsive Design */
-@media (max-width: 768px) {
-  .neon-button {
-    padding: 8px 16px;
-    font-size: 12px;
-  }
-  
-  .retro-text {
-    font-size: 10px;
-  }
-}
-
-/* Scrollbar Styling */
-::-webkit-scrollbar {
-  width: 8px;
-}
-
-::-webkit-scrollbar-track {
-  background: var(--space-dark);
-}
-
-::-webkit-scrollbar-thumb {
-  background: var(--neon-cyan);
-  border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: var(--neon-pink);
+  flex-direction: column;
 }

@@ -1,0 +1,188 @@
+.about {
+  flex: 1;
+  padding: 2rem;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.about h1 {
+  color: #00ff88;
+  text-align: center;
+  margin-bottom: 3rem;
+  font-size: 2.5rem;
+}
+
+.about-section {
+  background: rgba(255, 255, 255, 0.05);
+  padding: 2rem;
+  margin: 2rem 0;
+  border-radius: 15px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.about-section:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 30px rgba(0, 255, 136, 0.1);
+}
+
+.about-section h2 {
+  color: #00ff88;
+  margin-bottom: 1.5rem;
+  font-size: 1.8rem;
+  border-bottom: 2px solid rgba(0, 255, 136, 0.3);
+  padding-bottom: 0.5rem;
+}
+
+.about-section p {
+  line-height: 1.8;
+  margin-bottom: 1rem;
+  opacity: 0.9;
+}
+
+.about-section ul {
+  margin: 1rem 0;
+  padding-left: 1.5rem;
+}
+
+.about-section li {
+  margin: 0.8rem 0;
+  line-height: 1.6;
+  opacity: 0.9;
+}
+
+.about-section li strong {
+  color: #00ff88;
+}
+
+.about-section a {
+  color: #4ecdc4;
+  text-decoration: none;
+  transition: color 0.3s;
+}
+
+.about-section a:hover {
+  color: #00ff88;
+  text-decoration: underline;
+}
+
+.tech-stack {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+  margin-top: 1.5rem;
+}
+
+.tech-item {
+  background: rgba(0, 255, 136, 0.1);
+  padding: 1.5rem;
+  border-radius: 10px;
+  border: 1px solid rgba(0, 255, 136, 0.2);
+  transition: transform 0.3s;
+}
+
+.tech-item:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 5px 15px rgba(0, 255, 136, 0.2);
+}
+
+.tech-item h4 {
+  color: #00ff88;
+  margin-bottom: 1rem;
+  font-size: 1.3rem;
+  text-align: center;
+}
+
+.tech-item ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.tech-item li {
+  padding: 0.5rem 0;
+  border-bottom: 1px solid rgba(0, 255, 136, 0.2);
+  text-align: center;
+  font-weight: 500;
+}
+
+.tech-item li:last-child {
+  border-bottom: none;
+}
+
+.game-instructions {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2rem;
+  margin-top: 1.5rem;
+}
+
+.instruction-item {
+  background: rgba(78, 205, 196, 0.1);
+  padding: 1.5rem;
+  border-radius: 10px;
+  border: 1px solid rgba(78, 205, 196, 0.2);
+}
+
+.instruction-item h4 {
+  color: #4ecdc4;
+  margin-bottom: 1rem;
+  font-size: 1.2rem;
+  text-align: center;
+}
+
+.instruction-item ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.instruction-item li {
+  padding: 0.5rem 0;
+  border-bottom: 1px solid rgba(78, 205, 196, 0.2);
+  position: relative;
+  padding-left: 1.5rem;
+}
+
+.instruction-item li:before {
+  content: "▶";
+  color: #4ecdc4;
+  font-weight: bold;
+  position: absolute;
+  left: 0;
+}
+
+.instruction-item li:last-child {
+  border-bottom: none;
+}
+
+.instruction-item strong {
+  color: #4ecdc4;
+}
+
+@media (max-width: 768px) {
+  .about {
+    padding: 1rem;
+  }
+  
+  .about h1 {
+    font-size: 2rem;
+  }
+  
+  .about-section {
+    padding: 1.5rem;
+  }
+  
+  .about-section h2 {
+    font-size: 1.5rem;
+  }
+  
+  .tech-stack {
+    grid-template-columns: 1fr;
+  }
+  
+  .game-instructions {
+    grid-template-columns: 1fr;
+  }
+}

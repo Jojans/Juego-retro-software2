@@ -25,6 +25,15 @@ Un juego de arcade espacial desarrollado con **Phaser.js** y **React** que combi
 
 ## 🚀 Instalación y Ejecución
 
+### 🎮 Juego Original (HTML5 + JavaScript)
+El juego principal está en la carpeta `Proyecto/` y es completamente funcional sin dependencias.
+
+**Para jugar localmente:**
+1. Abre `Proyecto/naves.html` en tu navegador
+2. ¡Listo! No necesitas instalar nada
+
+**Para el proyecto completo (React + Node.js):**
+
 ### Prerrequisitos
 - Node.js (versión 16 o superior)
 - npm o yarn
@@ -67,6 +76,36 @@ Un juego de arcade espacial desarrollado con **Phaser.js** y **React** que combi
 4. **Abrir en el navegador**
    - Frontend: http://localhost:3000
    - Backend: http://localhost:4000
+
+## 🌐 Despliegue Gratuito para Fines Educativos
+
+### Opciones Recomendadas
+
+1. **GitHub Pages** (Más fácil)
+   - Sube el código a GitHub
+   - Activa Pages en Settings
+   - Tu juego estará en `https://tuusuario.github.io/repositorio`
+
+2. **Netlify** (Más rápido)
+   - Ve a [netlify.com](https://netlify.com)
+   - Arrastra la carpeta del proyecto
+   - ¡Desplegado en segundos!
+
+3. **Vercel** (Más profesional)
+   - Conecta tu repositorio de GitHub
+   - Deploy automático en cada commit
+
+### Script de Despliegue Rápido
+```bash
+# Windows
+deploy.bat
+
+# O manualmente con Surge.sh
+npm install -g surge
+surge
+```
+
+📖 **Ver [DEPLOYMENT.md](DEPLOYMENT.md) para guía completa de despliegue**
 
 ## 🛠️ Tecnologías Utilizadas
 
@@ -192,3 +231,4 @@ Este proyecto está bajo la Licencia MIT. Ver el archivo `LICENSE` para más det
 ---
 
 ¡Disfruta jugando! 🚀✨
+

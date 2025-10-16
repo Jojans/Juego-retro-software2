@@ -1,5 +1,4 @@
 import { Request, Response, NextFunction } from 'express';
-import { logger } from '../utils/logger';
 
 export interface AppError extends Error {
   statusCode?: number;
@@ -7,60 +6,76 @@ export interface AppError extends Error {
 }
 
 export const errorHandler = (
-  error: AppError,
+  err: AppError,
   req: Request,
   res: Response,
   next: NextFunction
-) => {
-  let { statusCode = 500, message } = error;
+): void => {
+  let error = { ...err };
+  error.message = err.message;
 
   // Log error
-  logger.error('Error occurred:', {
-    error: error.message,
-    stack: error.stack,
-    url: req.url,
-    method: req.method,
-    ip: req.ip,
-    userAgent: req.get('User-Agent')
-  });
+  console.error('Error:', err);
 
-  // Mongoose validation error
-  if (error.name === 'ValidationError') {
-    statusCode = 400;
-    message = 'Validation Error';
+  // Default error
+  let message = 'Internal Server Error';
+  let statusCode = 500;
+
+  // Mongoose bad ObjectId
+  if (err.name === 'CastError') {
+    message = 'Resource not found';
+    statusCode = 404;
   }
 
-  // Mongoose duplicate key error
-  if (error.name === 'MongoError' && (error as any).code === 11000) {
+  // Mongoose duplicate key
+  if (err.name === 'MongoError' && (err as any).code === 11000) {
+    message = 'Duplicate field value entered';
     statusCode = 400;
-    message = 'Duplicate field value';
+  }
+
+  // Mongoose validation error
+  if (err.name === 'ValidationError') {
+    message = Object.values((err as any).errors).map((val: any) => val.message).join(', ');
+    statusCode = 400;
   }
 
   // JWT errors
-  if (error.name === 'JsonWebTokenError') {
-    statusCode = 401;
+  if (err.name === 'JsonWebTokenError') {
     message = 'Invalid token';
-  }
-
-  if (error.name === 'TokenExpiredError') {
     statusCode = 401;
+  }
+
+  if (err.name === 'TokenExpiredError') {
     message = 'Token expired';
+    statusCode = 401;
   }
 
-  // Cast error (invalid ObjectId)
-  if (error.name === 'CastError') {
-    statusCode = 400;
-    message = 'Invalid ID format';
+  // PostgreSQL errors
+  if (err.name === 'QueryFailedError') {
+    const pgError = err as any;
+    if (pgError.code === '23505') { // Unique violation
+      message = 'Duplicate field value entered';
+      statusCode = 400;
+    } else if (pgError.code === '23503') { // Foreign key violation
+      message = 'Referenced resource not found';
+      statusCode = 400;
+    } else if (pgError.code === '23502') { // Not null violation
+      message = 'Required field missing';
+      statusCode = 400;
+    }
   }
 
-  // Don't leak error details in production
-  if (process.env.NODE_ENV === 'production' && !error.isOperational) {
-    message = 'Something went wrong';
+  // Use custom error properties if available
+  if (err.statusCode) {
+    statusCode = err.statusCode;
+  }
+  if (err.message) {
+    message = err.message;
   }
 
   res.status(statusCode).json({
     success: false,
-    message,
-    ...(process.env.NODE_ENV === 'development' && { stack: error.stack })
+    error: message,
+    ...(process.env.NODE_ENV === 'development' && { stack: err.stack })
   });
 };

@@ -8,23 +8,14 @@ import { createServer } from 'http';
 import { Server } from 'socket.io';
 import dotenv from 'dotenv';
 
-// Import routes
-import authRoutes from './routes/auth';
-import userRoutes from './routes/user';
-import gameRoutes from './routes/game';
-import leaderboardRoutes from './routes/leaderboard';
-import analyticsRoutes from './routes/analytics';
-
-// Import middleware
+import { connectDatabase } from './config/database';
 import { errorHandler } from './middleware/errorHandler';
 import { notFound } from './middleware/notFound';
-import { logger } from './utils/logger';
 
-// Import database
-import { testConnection, syncDatabase } from './config/database';
-
-// Import services
-import { SocketService } from './services/SocketService';
+// Routes
+import authRoutes from './routes/auth';
+import gameRoutes from './routes/game';
+import leaderboardRoutes from './routes/leaderboard';
 
 // Load environment variables
 dotenv.config();
@@ -38,96 +29,95 @@ const io = new Server(server, {
   }
 });
 
-// Environment variables
 const PORT = process.env.PORT || 4000;
-const DATABASE_URL = process.env.DATABASE_URL || 'postgres://spacearcade:password123@localhost:5432/space_arcade';
-const NODE_ENV = process.env.NODE_ENV || 'development';
 
 // Rate limiting
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 100, // limit each IP to 100 requests per windowMs
-  message: 'Too many requests from this IP, please try again later.',
-  standardHeaders: true,
-  legacyHeaders: false,
+  message: 'Too many requests from this IP, please try again later.'
 });
 
 // Middleware
 app.use(helmet());
+app.use(compression());
+app.use(morgan('combined'));
+app.use(limiter);
 app.use(cors({
   origin: process.env.CORS_ORIGIN || "http://localhost:3000",
   credentials: true
 }));
-app.use(compression());
-app.use(morgan('combined', { stream: { write: (message) => logger.info(message.trim()) } }));
 app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true, limit: '10mb' }));
-
-// Apply rate limiting to all requests
-app.use(limiter);
+app.use(express.urlencoded({ extended: true }));
 
 // Health check endpoint
 app.get('/health', (req, res) => {
-  res.status(200).json({ 
-    status: 'healthy', 
+  res.status(200).json({
+    status: 'OK',
     timestamp: new Date().toISOString(),
-    uptime: process.uptime()
+    uptime: process.uptime(),
+    environment: process.env.NODE_ENV || 'development'
   });
 });
 
-// API routes
+// API Routes
 app.use('/api/auth', authRoutes);
-app.use('/api/user', userRoutes);
 app.use('/api/game', gameRoutes);
 app.use('/api/leaderboard', leaderboardRoutes);
-app.use('/api/analytics', analyticsRoutes);
+
+// Socket.io connection handling
+io.on('connection', (socket) => {
+  console.log(`User connected: ${socket.id}`);
+
+  socket.on('join-game', (data) => {
+    console.log(`User ${socket.id} joined game:`, data);
+    socket.join('game-room');
+  });
+
+  socket.on('game-score', (data) => {
+    console.log(`Score update from ${socket.id}:`, data);
+    socket.to('game-room').emit('score-update', data);
+  });
+
+  socket.on('disconnect', () => {
+    console.log(`User disconnected: ${socket.id}`);
+  });
+});
 
 // Error handling middleware
 app.use(notFound);
 app.use(errorHandler);
 
-// Socket.IO service
-const socketService = new SocketService(io);
-
 // Database connection and server startup
-const startServer = async () => {
+async function startServer() {
   try {
-    // Test database connection
-    const isConnected = await testConnection();
-    if (!isConnected) {
-      throw new Error('Database connection failed');
-    }
-
-    // Sync database (create tables if they don't exist)
-    await syncDatabase();
-
-    // Start server
+    await connectDatabase();
+    console.log('✅ Database connected successfully');
+    
     server.listen(PORT, () => {
-      logger.info(`Server running on port ${PORT} in ${NODE_ENV} mode`);
+      console.log(`🚀 Server running on port ${PORT}`);
+      console.log(`📊 Health check: http://localhost:${PORT}/health`);
+      console.log(`🎮 Game API: http://localhost:${PORT}/api`);
     });
   } catch (error) {
-    logger.error('Server startup error:', error);
+    console.error('❌ Failed to start server:', error);
     process.exit(1);
   }
-};
-
-startServer();
+}
 
 // Graceful shutdown
 process.on('SIGTERM', () => {
-  logger.info('SIGTERM received, shutting down gracefully');
+  console.log('SIGTERM received, shutting down gracefully');
   server.close(() => {
-    logger.info('Process terminated');
-    process.exit(0);
+    console.log('Process terminated');
   });
 });
 
 process.on('SIGINT', () => {
-  logger.info('SIGINT received, shutting down gracefully');
+  console.log('SIGINT received, shutting down gracefully');
   server.close(() => {
-    logger.info('Process terminated');
-    process.exit(0);
+    console.log('Process terminated');
   });
 });
 
-export default app;
+startServer();
