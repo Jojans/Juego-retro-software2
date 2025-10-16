@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Test Local - Space Arcane Game</title>
+    <style>
+        body {
+            background: #000;
+            color: white;
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 20px;
+        }
+        .test-info {
+            background: rgba(0, 255, 136, 0.1);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+        #canvas {
+            border: 2px solid #00ff88;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🎮 Test Local - Space Arcane Game</h1>
+    
+    <div class="test-info">
+        <h2>✅ Verificaciones:</h2>
+        <p id="canvas-test">Canvas: <span id="canvas-status">Verificando...</span></p>
+        <p id="js-test">JavaScript: <span id="js-status">Verificando...</span></p>
+        <p id="images-test">Imágenes: <span id="images-status">Verificando...</span></p>
+    </div>
+    
+    <div class="test-info">
+        <h2>🎮 Juego:</h2>
+        <p>Si ves el canvas con borde verde y el juego funciona, ¡todo está listo para Netlify!</p>
+        <canvas id="canvas" width="600" height="650">TU NAVEGADOR NO SOPORTA HTML5!</canvas>
+    </div>
+    
+    <div class="test-info">
+        <h2>📋 Controles:</h2>
+        <p>← → Flechas para mover | ESPACIO para disparar | P para pausar</p>
+    </div>
+
+    <script src="Proyecto/js/videojuego-javascript.js"></script>
+    
+    <script>
+        // Verificaciones
+        document.addEventListener('DOMContentLoaded', function() {
+            // Test Canvas
+            const canvas = document.getElementById('canvas');
+            const ctx = canvas.getContext('2d');
+            if (ctx) {
+                document.getElementById('canvas-status').textContent = '✅ Funcionando';
+                document.getElementById('canvas-status').style.color = '#00ff88';
+            } else {
+                document.getElementById('canvas-status').textContent = '❌ No soportado';
+                document.getElementById('canvas-status').style.color = '#ff6b6b';
+            }
+            
+            // Test JavaScript
+            if (typeof game !== 'undefined') {
+                document.getElementById('js-status').textContent = '✅ Cargado';
+                document.getElementById('js-status').style.color = '#00ff88';
+            } else {
+                document.getElementById('js-status').textContent = '❌ Error';
+                document.getElementById('js-status').style.color = '#ff6b6b';
+            }
+            
+            // Test Imágenes
+            const img = new Image();
+            img.onload = function() {
+                document.getElementById('images-status').textContent = '✅ Cargando';
+                document.getElementById('images-status').style.color = '#00ff88';
+            };
+            img.onerror = function() {
+                document.getElementById('images-status').textContent = '❌ Error';
+                document.getElementById('images-status').style.color = '#ff6b6b';
+            };
+            img.src = 'Proyecto/images/bueno.png';
+            
+            // Inicializar juego
+            if (typeof game !== 'undefined') {
+                setTimeout(() => {
+                    game.init();
+                }, 1000);
+            }
+        });
+    </script>
+</body>
+</html>

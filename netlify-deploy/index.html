@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Space Arcane Game - Juego Educativo</title>
+    <meta name="description" content="Juego educativo de naves espaciales desarrollado con HTML5 Canvas y JavaScript">
+    <meta name="keywords" content="juego, educativo, naves, espacial, arcade, javascript, html5">
+    <meta name="author" content="Space Arcade Team">
+    
+    <!-- Open Graph para redes sociales -->
+    <meta property="og:title" content="Space Arcane Game - Juego Educativo">
+    <meta property="og:description" content="Juego educativo de naves espaciales desarrollado con HTML5 Canvas y JavaScript">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://tuusuario.github.io/space-arcade-game">
+    
+    <link rel="stylesheet" href="Proyecto/css/reset.css">
+    <link rel="stylesheet" href="Proyecto/css/main.css">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="Proyecto/images/medalla.png">
+    
+    <style>
+        /* Banner educativo */
+        .educational-banner {
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            color: white;
+            padding: 10px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+        
+        /* Mejorar la presentación del juego original */
+        body {
+            background: #000;
+            margin: 0;
+            padding: 0;
+        }
+        
+        .contenedor {
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            gap: 20px;
+            padding: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .izquierda {
+            background: rgba(0, 0, 0, 0.8);
+            padding: 15px;
+            border-radius: 10px;
+            color: white;
+            min-width: 250px;
+        }
+        
+        .derecha {
+            background: rgba(0, 0, 0, 0.8);
+            padding: 15px;
+            border-radius: 10px;
+            color: white;
+            min-width: 200px;
+        }
+        
+        .juego {
+            display: flex;
+            justify-content: center;
+        }
+        
+        #canvas {
+            border: 2px solid #00ff88;
+            border-radius: 10px;
+        }
+        
+        .lista {
+            list-style: none;
+            padding: 0;
+            margin: 10px 0;
+        }
+        
+        .lista li {
+            margin: 5px 0;
+            padding: 5px;
+            background: rgba(0, 255, 136, 0.1);
+            border-radius: 3px;
+        }
+        
+        .titulo {
+            font-weight: bold;
+            color: #00ff88;
+            background: rgba(0, 255, 136, 0.2) !important;
+        }
+        
+        .tituloPuntuaciones {
+            color: #00ff88;
+            text-align: center;
+            margin-top: 0;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .contenedor {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            #canvas {
+                max-width: 100%;
+                height: auto;
+            }
+        }
+    </style>
+</head>
+<body onload="game.init()">
+    <div class="educational-banner">
+        🎮 JUEGO EDUCATIVO - Space Arcane Game 🚀 | Desarrollado con HTML5 Canvas y JavaScript
+    </div>
+    
+    <div class="contenedor">
+        <div class="izquierda">
+            <img src="Proyecto/images/autentia.png" style="width: 250px; height: 100px;" />
+            <ul class="lista">
+                <li class="titulo">CONTROLES:</li>
+                <li class="izquierda">← → Flechas direccionales</li>
+                <li class="derecha">W A S D (alternativo)</li>
+                <li class="espacio">ESPACIO - Disparar</li>
+                <li class="espacio">P o ESC - Pausa</li>
+            </ul>
+            <ul class="lista">
+                <li class="titulo">PROBADO CON:</li>
+                <li class="firefox">Mozilla Firefox 11+</li>
+                <li class="chrome">Google Chrome 18+</li>
+                <li class="safari">Safari 5.1+</li>
+                <li class="chrome">Edge (todas las versiones)</li>
+            </ul>
+            <ul class="lista">
+                <li class="titulo">EDUCATIVO:</li>
+                <li><a href="https://github.com/tuusuario/space-arcade-game" target="_blank" style="color: #00ff88;">📚 Ver Código en GitHub</a></li>
+                <li><a href="#" onclick="alert('Tutorial: Usa las flechas para moverte, ESPACIO para disparar. Elimina todos los enemigos para ganar!')" style="color: #00ff88;">🎮 Tutorial del Juego</a></li>
+            </ul>
+        </div>
+        <div class="derecha">
+            <h3 class="tituloPuntuaciones">MEJORES PUNTUACIONES</h3>
+            <ul id="puntuaciones"></ul>
+        </div>
+        <div class="juego">
+            <canvas id="canvas" width="600" height="650">TU NAVEGADOR NO SOPORTA HTML5!</canvas>
+        </div>
+    </div>
+
+    <script src="Proyecto/js/videojuego-javascript.js"></script>
+    
+    <script>
+        // Analytics básico (opcional)
+        console.log('🎮 Space Arcane Game cargado correctamente');
+        console.log('📚 Proyecto educativo - Código disponible en GitHub');
+        
+        // Mejorar la experiencia en móviles
+        if (window.innerWidth < 768) {
+            const canvas = document.getElementById('canvas');
+            canvas.style.maxWidth = '100%';
+            canvas.style.height = 'auto';
+        }
+    </script>
+</body>
+</html>
+
